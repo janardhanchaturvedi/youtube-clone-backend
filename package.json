@@ -2,8 +2,10 @@
   "name": "youtube-clone",
   "version": "1.0.0",
   "description": "This is clone backend of the youtube this will contains the api related to the real life youtube implementation replica ",
+  "type": "module",
   "main": "index.js",
   "scripts": {
+    "dev" : "nodemon src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -14,5 +16,8 @@
     "express"
   ],
   "author": "Janardhan Chaturvedi",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
 }
