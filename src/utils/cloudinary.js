@@ -6,17 +6,21 @@ import fs from 'fs';
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinary = (localFilePath) => {
+const uploadOnCloudinary =async (localFilePath) => {
     try {
         if (!localFilePath) return null;
-        const response = cloudinary.uploader.upload(localFilePath, {
+        const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: "auto",
         });
 
-        console.log("file is uploaded on cloudinary", response.url);
+        if (fs.existsSync(localFilePath)) {
+            fs.unlinkSync(localFilePath);
+        }
         return response;
-    } catch (error) {
-        fs.unlinkSync(localFilePath);
+    } catch (error) {        
+        if (fs.existsSync(localFilePath)) {
+            fs.unlinkSync(localFilePath);
+        }
         return null;
     }
 };
