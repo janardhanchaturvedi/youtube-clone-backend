@@ -1,5 +1,7 @@
 import { User } from "../models/user.models.js";
+import { Video } from "../models/video.models.js";
 import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
@@ -19,14 +21,13 @@ const uploadVideo = asyncHandler(async (req, res) => {
     const thumbnail = await uploadOnCloudinary(thumbnailPath);
     const video = await uploadOnCloudinary(videoPath);
 
-    const owner = User.findById(req?.user?._id);
-
-    const uploadedVideo = video.create({
+    
+    const uploadedVideo = await Video.create({
         title,
         description,
         thumbnail: thumbnail?.url,
         videoFile: video?.url,
-        owner: owner?._id,
+        owner: req?.user?._id,
         duration : video?.duration
     });
 
