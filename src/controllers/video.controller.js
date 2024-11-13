@@ -21,33 +21,49 @@ const uploadVideo = asyncHandler(async (req, res) => {
     const thumbnail = await uploadOnCloudinary(thumbnailPath);
     const video = await uploadOnCloudinary(videoPath);
 
-    
     const uploadedVideo = await Video.create({
         title,
         description,
         thumbnail: thumbnail?.url,
         videoFile: video?.url,
         owner: req?.user?._id,
-        duration : video?.duration
+        duration: video?.duration,
     });
 
-    if(!uploadedVideo) {
-        return new ApiError("500" , "Something went wrong")
+    if (!uploadedVideo) {
+        return new ApiError("500", "Something went wrong");
     }
 
-    return res.status(200).json(new ApiResponse(200 ,uploadedVideo , "Video Uploaded Sucesfully" ))
+    return res
+        .status(200)
+        .json(new ApiResponse(200, uploadedVideo, "Video Uploaded Sucesfully"));
 });
 
-const getAllVideo =  asyncHandler(async(req , res) => {
-    const allVideos = await Video.find();
-    if(!allVideos) {
-        return new ApiError(500 , "Something weng wrong")
-    }
-    
-    return res.status(200).json(new ApiResponse(200 , allVideos , "Video Fetched Successfully"))
-})
+const getAllVideo = asyncHandler(async (req, res) => {
+    const { limit, page, search } = req?.query;
+    const skip = page * limit;
+    const [allVideos, videosCount] = await Promise.all([
+        Video.find({
+            title: { $regex: search, $options: "i" },
+        })
+            .skip(skip)
+            .limit(limit),
+        Video.countDocuments(),
+    ]);
 
-export {
-    uploadVideo,
-    getAllVideo
-};
+    if (!allVideos || !videosCount) {
+        return new ApiError(500, "Something weng wrong");
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                { allVideos, videosCount },
+                "Video Fetched Successfully"
+            )
+        );
+});
+
+export { uploadVideo, getAllVideo };
