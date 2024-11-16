@@ -40,7 +40,7 @@ const uploadVideo = asyncHandler(async (req, res) => {
 });
 
 const getAllVideo = asyncHandler(async (req, res) => {
-    const { limit, page, search } = req?.query;
+    const { limit = 10, page = 0, search } = req?.query;
     const skip = page * limit;
     const [allVideos, videosCount] = await Promise.all([
         Video.find({
@@ -66,4 +66,77 @@ const getAllVideo = asyncHandler(async (req, res) => {
         );
 });
 
-export { uploadVideo, getAllVideo };
+const getVideoById = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+
+    if (!videoId) {
+        return new ApiError("401", "Please enter the credentials");
+    }
+
+    const videoDetails = await Video.findById(videoId);
+
+    if (!videoDetails) {
+        return new ApiError("404", "Video not found");
+    }
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, videoDetails, "Video Fetched Sucessfully"));
+});
+
+const updateVideo = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+    //TODO: update video details like title, description, thumbnail
+});
+
+const deleteVideo = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+    if (!videoId) {
+        return new ApiError("401", "Please enter the credentials");
+    }
+
+    const videoDetails = await Video.findById(videoId);
+
+    if (!videoDetails) {
+        return new ApiError("404", "Video not found");
+    }
+
+    const deletedVideo = await Video.deleteOne({ $id: videoId });
+    return res
+        .status(200)
+        .json(new ApiResponse(200, deletedVideo, "Video deleted Successfully"));
+});
+
+const togglePublishStatus = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+
+    if (!videoId) {
+        return new ApiError("401", "Please enter the credentials");
+    }
+
+    const videoDetails = await Video.findById(videoId);
+
+    if (!videoDetails) {
+        return new ApiError("404", "Video not found");
+    }
+
+    const UpdatedStatus = await Video.findByIdAndUpdate(
+        videoId,
+        [{ $set: { isPublished: { $not: "$isPublished" } } }],
+        { new: true }
+    );
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse("200", UpdatedStatus, "Status updated successfully")
+        );
+});
+
+export {
+    uploadVideo,
+    getAllVideo,
+    getVideoById,
+    deleteVideo,
+    togglePublishStatus,
+};
