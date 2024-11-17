@@ -86,7 +86,40 @@ const getVideoById = asyncHandler(async (req, res) => {
 
 const updateVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
-    //TODO: update video details like title, description, thumbnail
+    const { title, description } = req?.body;
+    const isVideoExists = await Video.findById(videoId);
+
+    if (!isVideoExists) {
+        return new ApiError(404, "Video not found");
+    }
+
+    const thumbnailPath = req?.file?.thumbnail?.[0]?.path;
+
+    const thumbnail = await uploadOnCloudinary(thumbnailPath);
+
+    const updatedDetails = await Video.findByIdAndUpdate(
+        videoId,
+        {
+            $set: {
+                thumbnail: thumbnail?.url,
+                title: title,
+                description: description,
+            },
+        },
+        {
+            new: true,
+        }
+    );
+
+    if (!updatedDetails) {
+        return new ApiError(500, "Something went wrong");
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, updatedDetails, "Video updated successfully")
+        );
 });
 
 const deleteVideo = asyncHandler(async (req, res) => {
@@ -139,4 +172,5 @@ export {
     getVideoById,
     deleteVideo,
     togglePublishStatus,
+    updateVideo,
 };
