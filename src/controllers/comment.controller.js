@@ -8,7 +8,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
     //TODO: get all comments for a video
     const { videoId } = req.params;
     const { page = 1, limit = 10 } = req.query;
-
+    const skip = (page - 1) * limit;
     if (!videoId) {
         return new ApiError(401, "Please enter the Video Id");
     }
@@ -37,6 +37,12 @@ const getVideoComments = asyncHandler(async (req, res) => {
                     $first: "$commentUser",
                 },
             },
+        },
+        {
+            $skip: skip,
+        },
+        {
+            $limit: limit,
         },
     ]);
 
