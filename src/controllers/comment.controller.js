@@ -91,9 +91,40 @@ const addComment = asyncHandler(async (req, res) => {
             new ApiResponse(200, commentCreated, "Comment added sucessfully")
         );
 });
-const updateComment = asyncHandler(async (req, res) => {
-    // TODO: update a comment
+const updateComment = asyncHandler(async (req, res, next) => {
+    const { commentId } = req.params;
+    const { comment } = req.body;
+
+    if (!commentId || !comment) {
+        return next(new ApiError(400, "Please enter valid fields"));
+    }
+
+    try {
+        const updatedComment = await Comment.findOneAndUpdate(
+            { commentId }, 
+            { content: comment }, 
+            { new: true } 
+        );
+
+        if (!updatedComment) {
+            return next(new ApiError(404, "Comment not found"));
+        }
+
+        // Respond with the updated comment
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    updatedComment,
+                    "Comment updated successfully"
+                )
+            );
+    } catch (error) {
+        return next(error);
+    }
 });
+
 const deleteComment = asyncHandler(async (req, res) => {
     // TODO: delete a comment
 });
