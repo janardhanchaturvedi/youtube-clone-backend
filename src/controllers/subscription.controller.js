@@ -66,7 +66,6 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
                     },
                 ],
             },
-
         },
         {
             $addFields: {
@@ -81,7 +80,43 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
-    const { subscriberId } = req.params;
+    const { channelId } = req.params;
+
+    if (!channelId) {
+        return new ApiError(404, "No subscriber specified");
+    }
+
+    const subscribedChannels = await Subscription.aggregate([
+        {
+            $match: {
+                subscriber: new mongoose.Types.ObjectId(req?.user?._id),
+            },
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "channel",
+                foreignField: "_id",
+                as: "channelsSubscribed",
+                pipeline: [
+                    {
+                        $project: {
+                            username: 1,
+                            fullName: 1,
+                            avatar: 1,
+                            email: 1,
+                        },
+                    },
+                ],
+            },
+        },
+    ]);
+
+    if (!subscribedChannels) {
+        return new ApiError(401, "Something went wrong");
+    }
+
+    return res.status(200).json(new ApiResponse(200, subscribedChannels, "OK"));
 });
 
 export { toggleSubscription, getUserChannelSubscribers, getSubscribedChannels };
