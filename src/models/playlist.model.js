@@ -10,7 +10,7 @@ const playListSchema = new Schema(
             type: String,
             required: true,
         },
-        videoes: [
+        videos: [
             {
                 type: Schema.Types.ObjectId,
                 ref: "Video",
