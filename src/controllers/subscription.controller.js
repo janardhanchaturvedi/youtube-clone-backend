@@ -110,6 +110,24 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
                 ],
             },
         },
+        {
+            $addFields: {
+                channelsSubscribed: {
+                    $first: "$channelsSubscribed",
+                },
+            },
+        },
+        {
+            $match: {
+                channelsSubscribed: { $ne: null },
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                channelsSubscribed: 1,
+            },
+        },
     ]);
 
     if (!subscribedChannels) {
