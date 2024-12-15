@@ -33,6 +33,19 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 const getPlaylistById = asyncHandler(async (req, res) => {
     const { playlistId } = req.params;
     //TODO: get playlist by id
+    if (!playlistId) {
+        return new ApiError(400, "Invalid playlist  id");
+    }
+
+    const playlist = await Playlist.findById(playlistId);
+
+    if (!playlist) {
+        return new ApiError(400, "Invalid playlist");
+    }
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, playlist, "Playlist fetched successfully"));
 });
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
@@ -41,7 +54,6 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
         if (!playlistId || !videoId || !isValidObjectId(videoId)) {
             return new ApiError(401, "Please provide a playlist");
         }
-        console.log("-------------------------------");
 
         const updatePlaylist = await Playlist.findByIdAndUpdate(
             playlistId,
@@ -52,16 +64,10 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
                 new: true,
             }
         );
-        console.log("--------------------DB operation khatam------------");
-        console.log(
-            "🚀 ~ addVideoToPlaylist ~ updatePlaylist:",
-            updatePlaylist
-        );
 
         if (!updatePlaylist) {
             return new ApiError(402, "Something went wrong");
         }
-        console.log("----------------Response ke phele-----------------");
 
         return res
             .status(200)
@@ -73,8 +79,7 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
                 )
             );
     } catch (error) {
-        console.log("🚀 ~ addVideoToPlaylist ~ error:", error)
-        
+        console.log("🚀 ~ addVideoToPlaylist ~ error:", error);
     }
 });
 
