@@ -33,19 +33,25 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 const getPlaylistById = asyncHandler(async (req, res) => {
     const { playlistId } = req.params;
     //TODO: get playlist by id
-    if (!playlistId) {
-        return new ApiError(400, "Invalid playlist  id");
+    try {
+        if (!playlistId) {
+            return new ApiError(400, "Invalid playlist  id");
+        }
+
+        const playlist = await Playlist.findById(playlistId);
+
+        if (!playlist) {
+            return new ApiError(400, "Invalid playlist");
+        }
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(200, playlist, "Playlist fetched successfully")
+            );
+    } catch (error) {
+        console.log("🚀 ~ getPlaylistById ~ error:", error);
     }
-
-    const playlist = await Playlist.findById(playlistId);
-
-    if (!playlist) {
-        return new ApiError(400, "Invalid playlist");
-    }
-
-    return res
-        .status(200)
-        .json(new ApiResponse(200, playlist, "Playlist fetched successfully"));
 });
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
@@ -90,7 +96,23 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
 
 const deletePlaylist = asyncHandler(async (req, res) => {
     const { playlistId } = req.params;
-    // TODO: delete playlist
+    if (!playlistId) {
+        return new ApiError(404, "No playlist");
+    }
+
+    try {
+        const deletePlaylistRequest =
+            await Playlist.findByIdAndDelete(playlistId);
+
+        if (!deletePlaylistRequest) {
+            return new ApiError(500, "Something went wrong");
+        }
+        return res
+            .status(200)
+            .json(new ApiResponse(200, "Playlist deleted successfully"));
+    } catch (error) {
+        console.log("🚀 ~ deletePlaylist ~ error:", error);
+    }
 });
 
 const updatePlaylist = asyncHandler(async (req, res) => {
