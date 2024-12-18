@@ -61,6 +61,10 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
             return new ApiError(401, "Please provide a playlist");
         }
 
+        const playlist = await Playlist.findById(playlistId);
+
+        
+
         const updatePlaylist = await Playlist.findByIdAndUpdate(
             playlistId,
             {
