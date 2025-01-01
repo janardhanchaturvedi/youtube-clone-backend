@@ -63,8 +63,6 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
 
         const playlist = await Playlist.findById(playlistId);
 
-        
-
         const updatePlaylist = await Playlist.findByIdAndUpdate(
             playlistId,
             {
@@ -156,6 +154,35 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     const { playlistId } = req.params;
     const { name, description } = req.body;
     //TODO: update playlist
+    if (!playlistId) {
+        throw new ApiError(401, "Please provide all the required fields");
+    }
+    try {
+        const updatedPlaylist = await Playlist.findByIdAndUpdate(
+            playlistId,
+            {
+                name,
+                description,
+            },
+            {
+                new: true,
+            }
+        );
+
+        if (!updatedPlaylist) throw new ApiError(500, "Something went wrong");
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    "Playlist updated successfully",
+                    updatedPlaylist
+                )
+            );
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong", error);
+    }
 });
 
 export {
